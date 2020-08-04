@@ -20,10 +20,6 @@ aliases: ['/docs/dev/br/backup-and-restore-tool/','/docs/dev/reference/tools/br/
 - It is recommended that you deploy BR on the PD node.
 - It is recommended that you mount a high-performance SSD to BR nodes and all TiKV nodes. A 10-gigabit network card is recommended. Otherwise, bandwidth is likely to be the performance bottleneck during the backup and restore process.
 
-## Download Binary
-
-Refer to the [download page](/download-ecosystem-tools.md#br-backup-and-restore) for more information.
-
 ## Implementation principles
 
 BR sends the backup or restoration commands to each TiKV node. After receiving these commands, TiKV performs the corresponding backup or restoration operations. Each TiKV node has a path in which the backup files generated in the backup operation are stored and from which the stored backup files are read during the restoration.
@@ -110,6 +106,20 @@ After TiKV receives the request to load the SST file, TiKV uses the Raft mechani
 After the restoration operation is completed, BR performs a checksum calculation on the restored data to compare the stored data with the backed up data.
 
 </details>
+
+## How to use
+
+Currently, two methods can be used to run backup and recovery: SQL and command line tools.
+
+### Through SQL 
+
+TiDB v4.0.2 and later versions support backup and restore through SQL statements. For details, see [Backup syntax](/sql-statements/sql-statement-backup.md#backup) and [Restore syntax](/sql-statements/sql-statement-restore.md#restore).
+
+### Through command line tools
+
+Also, you can use command line tools. First, you need to download a Binary of the BR tool, see [download link](/download-ecosystem-tools.md#Quick backup and restore br) for details. For details, see[download page](/download-ecosystem-tools.md#br-backup-and-restore).
+
+Take the command-line tool as an example to introduce how to perform backup and restoration operations.
 
 ## Command-line description
 
