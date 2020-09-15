@@ -38,6 +38,13 @@ A replication task might be interrupted in the following known scenarios:
         2. Use the new task configuration file and add the `ignore-txn-start-ts` parameter to skip the transaction corresponding to the specified `start-ts`.
         3. Stop the old replication task via HTTP API. Execute `cdc cli changefeed create` to create a new task and specify the new task configuration file. Specify `checkpoint-ts` recorded in step 1 as the `start-ts` and start a new task to resume the replication.
 
+## How do I know whether a TiCDC replication task is interrupted?
+
+- Check the `changefeed checkpoint` monitoring metric of the replication task (choose the right `changefeed id`) in the Grafana dashboard. If the metric value stays unchanged, or the `checkpoint lag` metric keeps increasing, the replication task might be interrupted.
+- Check the `exit error count` monitoring metric. If the metric value is greater than `0`, an error has occurred in the replication task.
+- Execute `cdc cli changefeed list` and `cdc cli changefeed query` to check the status of the replication task. `stopped` means the task has stopped and the `error` item provides the detailed error information. After the error occurs, you can search `error on running processor` in the TiCDC server log to see the error stack for troubleshooting.
+- In some extreme cases, the TiCDC service is restarted. You can search the `FATAL` level log in the TiCDC server log for troubleshooting.
+
 ## What is `gc-ttl` and file sorting in TiCDC?
 
 Since v4.0.0-rc.1, PD supports external services in setting the service-level GC safepoint. Any service can register and update its GC safepoint. PD ensures that the key-value data smaller than this GC safepoint is not cleaned by GC. Enabling this feature in TiCDC ensures that the data to be consumed by TiCDC is retained in TiKV without being cleaned by GC when the replication task is unavailable or interrupted.
@@ -54,7 +61,8 @@ cdc cli changefeed create --pd=http://10.0.10.25:2379 --start-ts=415238226621235
 
 > **Note:**
 >
-> TiCDC (the 4.0 version) does not support dynamically modifying the file sorting and memory sorting yet.
+> + TiCDC (the 4.0 version) does not support dynamically modifying the file sorting and memory sorting yet.
+> + Currently, the file sorting feature only has limited processing capacity. If the data size of a single table is too large and causes the file sorting to fail, you can modify the task configuration of TiCDC to filter out this table and use other backup and restore tools (such as [BR](/br/backup-and-restore-tool.md)) to restore the table before you resume replicating the table.
 
 ## How do I handle the `Error 1298: Unknown or incorrect time zone: 'UTC'` error when creating the replication task or replicating data to MySQL?
 
